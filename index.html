@@ -25,28 +25,6 @@
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
-        .patient-list {
-            margin-top: 20px;
-        }
-        .patient-card {
-            display: flex;
-            align-items: center;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            padding: 10px;
-            background: #f9f9f9;
-            cursor: pointer;
-        }
-        .patient-card img {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            margin-right: 10px;
-        }
-        .patient-card:hover {
-            background-color: #e1f5fe;
-        }
         .form-group {
             margin-bottom: 15px;
         }
@@ -71,31 +49,39 @@
         .btn:hover {
             background-color: #005f8c;
         }
-        .details-popup, .confirmation-popup {
+        .patient-list {
+            margin-top: 20px;
+        }
+        .patient-card {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #f9f9f9;
+            cursor: pointer;
+        }
+        .patient-card img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .patient-card:hover {
+            background-color: #e1f5fe;
+        }
+        .overlay, .details-popup, .confirmation-popup {
             display: none;
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 90%;
-            max-width: 500px;
             background: white;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
             z-index: 1000;
-        }
-        .details-popup h2, .confirmation-popup h2 {
-            margin-top: 0;
-        }
-        .details-popup .btn-close, .confirmation-popup .btn-close {
-            background: red;
-            color: white;
-            float: right;
-            cursor: pointer;
-            padding: 5px 10px;
-            border-radius: 50%;
-            font-weight: bold;
         }
         .overlay {
             display: none;
@@ -106,6 +92,14 @@
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
             z-index: 999;
+        }
+        .btn-close {
+            background: red;
+            color: white;
+            float: right;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 50%;
         }
     </style>
 </head>
@@ -148,7 +142,7 @@
             <input type="file" id="photo" accept="image/*">
         </div>
         <button class="btn" onclick="addPatient()">Salvar Paciente</button>
-        <button class="btn" onclick="goBack()">Voltar à Página Principal</button>
+        <button class="btn" onclick="window.location.href='index.html'">Voltar à Página Principal</button>
 
         <h2>Pacientes</h2>
         <input type="text" id="search" placeholder="Pesquisar paciente..." onkeyup="filterPatients()">
@@ -171,12 +165,10 @@
     <div class="confirmation-popup" id="confirmation-popup">
         <button class="btn-close" onclick="closeConfirmation()">×</button>
         <h2>Tem certeza de que deseja excluir este paciente?</h2>
-        <button class="btn" onclick="deletePatient()">Sim</button>
+        <button class="btn" onclick="confirmDeletion()">Sim</button>
         <button class="btn" onclick="closeConfirmation()">Não</button>
     </div>
 
-    <script>
-        // Código JavaScript completo permanece o mesmo, garantindo funcionalidade de adicionar, visualizar, editar, excluir e persistir os dados no localStorage.
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
