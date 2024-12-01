@@ -17,7 +17,7 @@ function savePatient() {
     // Define a imagem com base no gênero
     const photo =
         gender === "Feminino"
-            ? "Kyoka Uzen.jpeg" // Imagem para o gênero feminino
+            ? "Asuna Yuuki.jpeg" // Imagem para o gênero feminino
             : "Itachi Uchiha.jpeg"; // Imagem para o gênero masculino
 
     if (!name || !age || !gender || !consultationDate) {
