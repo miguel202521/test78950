@@ -15,7 +15,10 @@ function savePatient() {
     const consultationDate = document.getElementById("consultation-date").value;
 
     // Define a imagem com base no gênero
-    const photo = gender === "Feminino" ? "_ (3).jpeg" : "Itachi Uchiha.jpeg";
+    const photo =
+        gender === "Feminino"
+            ? "#asuna #asunayuuki #sao #swordartonline #anime #lineart.jpeg"
+            : "Itachi Uchiha.jpeg";
 
     if (!name || !age || !gender || !consultationDate) {
         alert("Por favor, preencha os campos obrigatórios.");
@@ -52,13 +55,14 @@ function renderPatients() {
     patientList.innerHTML = "";
 
     patients.forEach((patient) => {
-        const patientItem = document.createElement("div");
-        patientItem.className = "patient-item";
-        patientItem.innerHTML = `
+        const patientCard = document.createElement("div");
+        patientCard.className = "patient-card";
+        patientCard.innerHTML = `
+            <img src="${patient.photo}" alt="Foto de ${patient.name}">
             <span>${patient.name}</span>
             <button class="btn-view" onclick="showDetails(${patient.id})">Ver Ficha</button>
         `;
-        patientList.appendChild(patientItem);
+        patientList.appendChild(patientCard);
     });
 }
 
@@ -139,13 +143,14 @@ function filterPatients() {
     patientList.innerHTML = "";
 
     filteredPatients.forEach((patient) => {
-        const patientItem = document.createElement("div");
-        patientItem.className = "patient-item";
-        patientItem.innerHTML = `
+        const patientCard = document.createElement("div");
+        patientCard.className = "patient-card";
+        patientCard.innerHTML = `
+            <img src="${patient.photo}" alt="Foto de ${patient.name}">
             <span>${patient.name}</span>
             <button class="btn-view" onclick="showDetails(${patient.id})">Ver Ficha</button>
         `;
-        patientList.appendChild(patientItem);
+        patientList.appendChild(patientCard);
     });
 }
 
