@@ -17,8 +17,8 @@ function savePatient() {
     // Define a imagem com base no gênero
     const photo =
         gender === "Feminino"
-            ? "#asuna #asunayuuki #sao #swordartonline #anime #lineart.jpeg"
-            : "Itachi Uchiha.jpeg";
+            ? "Kyoka Uzen.jpeg" // Imagem para o gênero feminino
+            : "Itachi Uchiha.jpeg"; // Imagem para o gênero masculino
 
     if (!name || !age || !gender || !consultationDate) {
         alert("Por favor, preencha os campos obrigatórios.");
