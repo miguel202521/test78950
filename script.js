@@ -14,6 +14,7 @@ function savePatient() {
     const notes = document.getElementById("notes").value;
     const consultationDate = document.getElementById("consultation-date").value;
 
+    // Define a imagem com base no gênero
     const photo = gender === "Feminino" ? "_ (3).jpeg" : "Itachi Uchiha.jpeg";
 
     if (!name || !age || !gender || !consultationDate) {
