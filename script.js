@@ -1,109 +1,153 @@
-const patientList = document.getElementById('patient-list');
-const overlay = document.getElementById('overlay');
-const detailsPopup = document.getElementById('details-popup');
-const confirmationPopup = document.getElementById('confirmation-popup');
+let patients = JSON.parse(localStorage.getItem("patients")) || [];
+let editingPatientId = null;
 
-let patients = JSON.parse(localStorage.getItem('patients')) || [];
-let currentPatientIndex = null;
+document.getElementById("save-button").addEventListener("click", savePatient);
+document.getElementById("search").addEventListener("keyup", filterPatients);
 
-function addPatient() {
-    const name = document.getElementById('name').value.trim();
-    const age = document.getElementById('age').value;
-    const weight = document.getElementById('weight').value;
-    const complaints = document.getElementById('complaints').value.trim();
-    const history = document.getElementById('history').value.trim();
-    const notes = document.getElementById('notes').value.trim();
-    const consultationDate = document.getElementById('consultation-date').value;
+function savePatient() {
+    const name = document.getElementById("name").value;
+    const age = document.getElementById("age").value;
+    const gender = document.getElementById("gender").value;
+    const weight = document.getElementById("weight").value;
+    const complaints = document.getElementById("complaints").value;
+    const history = document.getElementById("history").value;
+    const notes = document.getElementById("notes").value;
+    const consultationDate = document.getElementById("consultation-date").value;
 
-    const photoInput = document.getElementById('photo');
-    const photo = photoInput.files.length > 0 ? URL.createObjectURL(photoInput.files[0]) : '';
+    const photo = gender === "Feminino" ? "_ (3).jpeg" : "Itachi Uchiha.jpeg";
 
-    if (name === '') return alert('O nome é obrigatório!');
+    if (!name || !age || !gender || !consultationDate) {
+        alert("Por favor, preencha os campos obrigatórios.");
+        return;
+    }
 
-    patients.push({ name, age, weight, complaints, history, notes, consultationDate, photo });
-    localStorage.setItem('patients', JSON.stringify(patients));
+    const patientData = {
+        id: editingPatientId || new Date().getTime(),
+        name,
+        age,
+        gender,
+        weight,
+        complaints,
+        history,
+        notes,
+        consultationDate,
+        photo,
+    };
+
+    if (editingPatientId) {
+        patients = patients.filter((patient) => patient.id !== editingPatientId);
+    }
+
+    patients.push(patientData);
+    localStorage.setItem("patients", JSON.stringify(patients));
+
     clearForm();
-    loadPatients();
+    renderPatients();
+    editingPatientId = null;
 }
 
-function loadPatients() {
-    patientList.innerHTML = '';
-    patients.forEach((patient, index) => {
-        const card = document.createElement('div');
-        card.className = 'patient-card';
-        card.innerHTML = `
-            <img src="${patient.photo}" alt="Foto do Paciente">
-            <div>${patient.name}</div>
+function renderPatients() {
+    const patientList = document.getElementById("patient-list");
+    patientList.innerHTML = "";
+
+    patients.forEach((patient) => {
+        const patientCard = document.createElement("div");
+        patientCard.className = "patient-card";
+        patientCard.innerHTML = `
+            <img src="${patient.photo}" alt="${patient.name}">
+            <span>${patient.name}</span>
         `;
-        card.onclick = () => openDetails(index);
-        patientList.appendChild(card);
+        patientCard.addEventListener("click", () => showDetails(patient.id));
+        patientList.appendChild(patientCard);
     });
 }
 
-function openDetails(index) {
-    const patient = patients[index];
-    currentPatientIndex = index;
-    document.getElementById('details-name').textContent = patient.name;
-    document.getElementById('details-age').textContent = patient.age;
-    document.getElementById('details-weight').textContent = patient.weight;
-    document.getElementById('details-complaints').textContent = patient.complaints;
-    document.getElementById('details-history').textContent = patient.history;
-    document.getElementById('details-notes').textContent = patient.notes;
-    document.getElementById('details-consultation-date').textContent = patient.consultationDate;
-    document.getElementById('details-photo').src = patient.photo;
-    overlay.style.display = 'block';
-    detailsPopup.style.display = 'block';
+function showDetails(patientId) {
+    const patient = patients.find((p) => p.id === patientId);
+
+    document.getElementById("details-name").textContent = patient.name;
+    document.getElementById("details-photo").src = patient.photo;
+    document.getElementById("details-age").textContent = patient.age;
+    document.getElementById("details-gender").textContent = patient.gender;
+    document.getElementById("details-weight").textContent = patient.weight;
+    document.getElementById("details-complaints").textContent = patient.complaints;
+    document.getElementById("details-history").textContent = patient.history;
+    document.getElementById("details-notes").textContent = patient.notes;
+    document.getElementById("details-consultation-date").textContent = patient.consultationDate;
+
+    editingPatientId = patientId;
+
+    document.getElementById("overlay").style.display = "block";
+    document.getElementById("details-popup").style.display = "block";
 }
 
 function closeDetails() {
-    overlay.style.display = 'none';
-    detailsPopup.style.display = 'none';
+    document.getElementById("overlay").style.display = "none";
+    document.getElementById("details-popup").style.display = "none";
 }
 
-function deletePatient() {
-    if (currentPatientIndex !== null) {
-        patients.splice(currentPatientIndex, 1);
-        localStorage.setItem('patients', JSON.stringify(patients));
-        loadPatients();
-        closeConfirmation();
-    }
-}
+function editPatient() {
+    const patient = patients.find((p) => p.id === editingPatientId);
 
-function closeConfirmation() {
-    overlay.style.display = 'none';
-    confirmationPopup.style.display = 'none';
+    document.getElementById("name").value = patient.name;
+    document.getElementById("age").value = patient.age;
+    document.getElementById("gender").value = patient.gender;
+    document.getElementById("weight").value = patient.weight;
+    document.getElementById("complaints").value = patient.complaints;
+    document.getElementById("history").value = patient.history;
+    document.getElementById("notes").value = patient.notes;
+    document.getElementById("consultation-date").value = patient.consultationDate;
+
+    closeDetails();
 }
 
 function confirmDeletion() {
-    overlay.style.display = 'block';
-    confirmationPopup.style.display = 'block';
+    document.getElementById("confirmation-popup").style.display = "block";
+}
+
+function deletePatient() {
+    patients = patients.filter((p) => p.id !== editingPatientId);
+    localStorage.setItem("patients", JSON.stringify(patients));
+
+    closeDetails();
+    closeConfirmation();
+    renderPatients();
+}
+
+function closeConfirmation() {
+    document.getElementById("confirmation-popup").style.display = "none";
 }
 
 function clearForm() {
-    document.getElementById('name').value = '';
-    document.getElementById('age').value = '';
-    document.getElementById('weight').value = '';
-    document.getElementById('complaints').value = '';
-    document.getElementById('history').value = '';
-    document.getElementById('notes').value = '';
-    document.getElementById('consultation-date').value = '';
-    document.getElementById('photo').value = '';
+    document.getElementById("name").value = "";
+    document.getElementById("age").value = "";
+    document.getElementById("gender").value = "Masculino";
+    document.getElementById("weight").value = "";
+    document.getElementById("complaints").value = "";
+    document.getElementById("history").value = "";
+    document.getElementById("notes").value = "";
+    document.getElementById("consultation-date").value = "";
 }
 
 function filterPatients() {
-    const search = document.getElementById('search').value.toLowerCase();
-    const filteredPatients = patients.filter(patient => patient.name.toLowerCase().includes(search));
-    patientList.innerHTML = '';
-    filteredPatients.forEach((patient, index) => {
-        const card = document.createElement('div');
-        card.className = 'patient-card';
-        card.innerHTML = `
-            <img src="${patient.photo}" alt="Foto do Paciente">
-            <div>${patient.name}</div>
+    const searchTerm = document.getElementById("search").value.toLowerCase();
+    const filteredPatients = patients.filter((p) =>
+        p.name.toLowerCase().includes(searchTerm)
+    );
+
+    const patientList = document.getElementById("patient-list");
+    patientList.innerHTML = "";
+
+    filteredPatients.forEach((patient) => {
+        const patientCard = document.createElement("div");
+        patientCard.className = "patient-card";
+        patientCard.innerHTML = `
+            <img src="${patient.photo}" alt="${patient.name}">
+            <span>${patient.name}</span>
         `;
-        card.onclick = () => openDetails(index);
-        patientList.appendChild(card);
+        patientCard.addEventListener("click", () => showDetails(patient.id));
+        patientList.appendChild(patientCard);
     });
 }
 
-loadPatients();
+renderPatients();
