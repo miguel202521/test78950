@@ -52,14 +52,13 @@ function renderPatients() {
     patientList.innerHTML = "";
 
     patients.forEach((patient) => {
-        const patientCard = document.createElement("div");
-        patientCard.className = "patient-card";
-        patientCard.innerHTML = `
-            <img src="${patient.photo}" alt="${patient.name}">
+        const patientItem = document.createElement("div");
+        patientItem.className = "patient-item";
+        patientItem.innerHTML = `
             <span>${patient.name}</span>
+            <button class="btn-view" onclick="showDetails(${patient.id})">Ver Ficha</button>
         `;
-        patientCard.addEventListener("click", () => showDetails(patient.id));
-        patientList.appendChild(patientCard);
+        patientList.appendChild(patientItem);
     });
 }
 
@@ -140,14 +139,13 @@ function filterPatients() {
     patientList.innerHTML = "";
 
     filteredPatients.forEach((patient) => {
-        const patientCard = document.createElement("div");
-        patientCard.className = "patient-card";
-        patientCard.innerHTML = `
-            <img src="${patient.photo}" alt="${patient.name}">
+        const patientItem = document.createElement("div");
+        patientItem.className = "patient-item";
+        patientItem.innerHTML = `
             <span>${patient.name}</span>
+            <button class="btn-view" onclick="showDetails(${patient.id})">Ver Ficha</button>
         `;
-        patientCard.addEventListener("click", () => showDetails(patient.id));
-        patientList.appendChild(patientCard);
+        patientList.appendChild(patientItem);
     });
 }
 
