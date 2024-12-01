@@ -68,20 +68,22 @@
             border-radius: 50%;
             margin-right: 10px;
         }
-        .patient-card:hover {
-            background-color: #e1f5fe;
-        }
-        .overlay, .details-popup, .confirmation-popup {
+        .details-popup, .confirmation-popup {
             display: none;
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 500px;
             background: white;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
             z-index: 1000;
+        }
+        .details-popup h2, .confirmation-popup h2 {
+            margin-top: 0;
         }
         .overlay {
             display: none;
@@ -93,13 +95,18 @@
             background: rgba(0, 0, 0, 0.5);
             z-index: 999;
         }
-        .btn-close {
-            background: red;
+        .back-button {
+            display: inline-block;
+            margin: 10px 0;
+            text-decoration: none;
+            background-color: #555;
             color: white;
-            float: right;
-            cursor: pointer;
-            padding: 5px 10px;
-            border-radius: 50%;
+            padding: 8px 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .back-button:hover {
+            background-color: #333;
         }
     </style>
 </head>
@@ -108,7 +115,8 @@
         <h1>Gerenciamento de Pacientes</h1>
     </header>
     <div class="container">
-        <h2>Adicionar Novo Paciente</h2>
+        <a href="index.html" class="back-button">Voltar para Página Principal</a>
+        <h2>Adicionar/Editar Paciente</h2>
         <div class="form-group">
             <label for="name">Nome:</label>
             <input type="text" id="name" placeholder="Digite o nome do paciente">
@@ -118,7 +126,14 @@
             <input type="number" id="age" placeholder="Digite a idade do paciente">
         </div>
         <div class="form-group">
-            <label for="weight">Peso (kg):</label>
+            <label for="gender">Sexo:</label>
+            <select id="gender">
+                <option value="Masculino">Homem</option>
+                <option value="Feminino">Mulher</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="weight">Peso:</label>
             <input type="number" id="weight" placeholder="Digite o peso do paciente">
         </div>
         <div class="form-group">
@@ -137,38 +152,31 @@
             <label for="consultation-date">Data da Consulta:</label>
             <input type="date" id="consultation-date">
         </div>
-        <div class="form-group">
-            <label for="photo">Foto:</label>
-            <input type="file" id="photo" accept="image/*">
-        </div>
-        <button class="btn" onclick="addPatient()">Salvar Paciente</button>
-        <button class="btn" onclick="window.location.href='index.html'">Voltar à Página Principal</button>
-
+        <button class="btn" id="save-button">Salvar Paciente</button>
         <h2>Pacientes</h2>
         <input type="text" id="search" placeholder="Pesquisar paciente..." onkeyup="filterPatients()">
-        <div class="patient-list" id="patient-list"></div>
+        <div id="patient-list" class="patient-list"></div>
     </div>
-
     <div class="overlay" id="overlay"></div>
     <div class="details-popup" id="details-popup">
-        <button class="btn-close" onclick="closeDetails()">×</button>
+        <button class="btn" onclick="closeDetails()">Fechar</button>
         <h2 id="details-name"></h2>
         <img id="details-photo" src="" alt="Foto do Paciente" style="width: 100px; height: 100px; border-radius: 50%; margin-bottom: 20px;">
         <p><strong>Idade:</strong> <span id="details-age"></span></p>
+        <p><strong>Sexo:</strong> <span id="details-gender"></span></p>
         <p><strong>Peso:</strong> <span id="details-weight"></span></p>
         <p><strong>Reclamações:</strong> <span id="details-complaints"></span></p>
         <p><strong>Histórico Médico:</strong> <span id="details-history"></span></p>
         <p><strong>Anotações:</strong> <span id="details-notes"></span></p>
         <p><strong>Data da Consulta:</strong> <span id="details-consultation-date"></span></p>
+        <button class="btn" onclick="editPatient()">Editar</button>
+        <button class="btn" onclick="confirmDeletion()">Excluir</button>
     </div>
-
     <div class="confirmation-popup" id="confirmation-popup">
-        <button class="btn-close" onclick="closeConfirmation()">×</button>
-        <h2>Tem certeza de que deseja excluir este paciente?</h2>
-        <button class="btn" onclick="confirmDeletion()">Sim</button>
+        <h2>Deseja realmente excluir este paciente?</h2>
+        <button class="btn" onclick="deletePatient()">Sim</button>
         <button class="btn" onclick="closeConfirmation()">Não</button>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
