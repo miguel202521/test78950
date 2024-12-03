@@ -13,7 +13,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            flex-direction: column;
+            min-height: 100vh;
         }
 
         .container {
@@ -61,20 +62,7 @@
             border-color: #dc3545;
         }
 
-        .tooltip {
-            position: absolute;
-            background-color: #333;
-            color: #fff;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.2s;
-            z-index: 1000;
-        }
-
-        .actions, .back-button {
+        .actions {
             margin: 10px 0;
         }
 
@@ -91,14 +79,75 @@
         button:hover {
             background-color: #0056b3;
         }
+
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            display: none;
+            z-index: 1000;
+            width: 350px;
+        }
+
+        .modal.open {
+            display: block;
+        }
+
+        .modal h3 {
+            margin-bottom: 10px;
+        }
+
+        .modal textarea {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 10px;
+        }
+
+        .saved-list {
+            margin: 30px 0;
+        }
+
+        .saved-list ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .saved-list li {
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tooltip {
+            position: absolute;
+            background-color: #333;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 1000;
+        }
+
+        .tooth:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
-    <div class="back-button">
-        <button onclick="window.location.href='pagina_nova.html';">Voltar</button>
-    </div>
-
     <div class="container">
+        <div style="text-align: left; margin-bottom: 20px;">
+            <button onclick="window.location.href='pagina_nova.html';">Voltar</button>
+        </div>
         <h1>Odontograma Interativo</h1>
         <div class="odontograma" id="odontograma"></div>
         <div class="actions">
@@ -106,15 +155,18 @@
             <button id="save-button">Salvar Odontograma</button>
             <button id="new-button">Novo Odontograma</button>
         </div>
-        
-        <div class="tooltip" id="tooltip"></div>
+        <div class="saved-list">
+            <h2>Odontogramas Salvos</h2>
+            <ul id="saved-odontograms"></ul>
+        </div>
     </div>
 
     <script>
         const odontograma = document.getElementById("odontograma");
-        const tooltip = document.getElementById("tooltip");
-
+        const odontogramaNome = document.getElementById("odontograma-nome");
+        const savedList = document.getElementById("saved-odontograms");
         let dentes = [];
+        let odontogramasSalvos = JSON.parse(localStorage.getItem("odontogramas")) || {};
 
         function gerarDentes() {
             const quadrantes = {
@@ -129,35 +181,69 @@
                     const dente = document.createElement("div");
                     dente.classList.add("tooth");
                     dente.dataset.id = num;
-                    dente.dataset.note = `Dente ${num}: sem anotações`;
-                    dente.innerHTML = `<span class="tooth-number">${num}</span>`;
-
-                    dente.addEventListener("mouseenter", (e) => exibirTooltip(e, num));
-                    dente.addEventListener("mousemove", (e) => moverTooltip(e));
-                    dente.addEventListener("mouseleave", () => esconderTooltip());
-
+                    dente.innerHTML = `
+                        <span class="tooth-number">${num}</span>
+                        <div class="tooltip">Clique para interagir</div>
+                    `;
                     odontograma.appendChild(dente);
                     dentes.push({ id: num, status: "Saudável", nota: "" });
                 });
             }
         }
 
-        function exibirTooltip(event, id) {
-            const dente = dentes.find(dente => dente.id == id);
-            tooltip.textContent = dente.nota ? dente.nota : "Sem anotações";
-            tooltip.style.opacity = "1";
+        function salvarOdontograma() {
+            if (odontogramaNome.value.trim()) {
+                const nome = odontogramaNome.value.trim();
+                odontogramasSalvos[nome] = dentes;
+                localStorage.setItem("odontogramas", JSON.stringify(odontogramasSalvos));
+                listarOdontogramas();
+                alert("Odontograma salvo com sucesso!");
+            } else {
+                alert("Insira um nome para o odontograma.");
+            }
         }
 
-        function moverTooltip(event) {
-            tooltip.style.top = `${event.pageY + 10}px`;
-            tooltip.style.left = `${event.pageX + 10}px`;
+        function listarOdontogramas() {
+            savedList.innerHTML = "";
+            Object.keys(odontogramasSalvos).forEach((nome) => {
+                const li = document.createElement("li");
+                li.textContent = nome;
+
+                const abrirBtn = document.createElement("button");
+                abrirBtn.textContent = "Abrir";
+                abrirBtn.onclick = () => carregarOdontograma(nome);
+                li.appendChild(abrirBtn);
+
+                const excluirBtn = document.createElement("button");
+                excluirBtn.textContent = "Excluir";
+                excluirBtn.onclick = () => excluirOdontograma(nome);
+                li.appendChild(excluirBtn);
+
+                savedList.appendChild(li);
+            });
         }
 
-        function esconderTooltip() {
-            tooltip.style.opacity = "0";
+        function carregarOdontograma(nome) {
+            dentes = odontogramasSalvos[nome];
+            odontograma.innerHTML = "";
+            gerarDentes();
         }
+
+        function excluirOdontograma(nome) {
+            delete odontogramasSalvos[nome];
+            localStorage.setItem("odontogramas", JSON.stringify(odontogramasSalvos));
+            listarOdontogramas();
+        }
+
+        document.getElementById("save-button").onclick = salvarOdontograma;
+        document.getElementById("new-button").onclick = () => {
+            dentes = [];
+            odontograma.innerHTML = "";
+            gerarDentes();
+        };
 
         gerarDentes();
+        listarOdontogramas();
     </script>
 </body>
 </html>
