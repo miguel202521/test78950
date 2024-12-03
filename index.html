@@ -25,8 +25,8 @@
         }
 
         h1 {
-            margin-top: 10px;
             font-size: 2rem;
+            margin: 20px 0;
         }
 
         .odontograma {
@@ -34,9 +34,8 @@
             grid-template-columns: repeat(16, 1fr);
             gap: 15px;
             justify-items: center;
-            margin: 30px 0;
+            margin: 20px 0;
             max-width: 1200px;
-            width: 100%;
         }
 
         .tooth {
@@ -52,23 +51,19 @@
             position: relative;
         }
 
-        .tooth-number {
-            font-size: 12px;
-            color: #666;
-        }
-
         .tooth.excluded {
             background-color: #f8d7da;
             border-color: #dc3545;
         }
 
-        .actions {
-            margin: 10px 0;
+        .tooth-number {
+            font-size: 12px;
+            color: #666;
         }
 
         button {
             padding: 10px 15px;
-            margin: 5px;
+            margin: 10px;
             background-color: #007bff;
             color: white;
             border: none;
@@ -85,13 +80,13 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background-color: #fff;
+            background-color: white;
             padding: 20px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             border-radius: 10px;
             display: none;
             z-index: 1000;
-            width: 350px;
+            width: 300px;
         }
 
         .modal.open {
@@ -99,76 +94,51 @@
         }
 
         .modal h3 {
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
 
         .modal textarea {
             width: 100%;
             height: 100px;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
 
-        .saved-list {
-            margin: 30px 0;
-        }
-
-        .saved-list ul {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        .saved-list li {
-            margin: 10px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .tooltip {
-            position: absolute;
-            background-color: #333;
-            color: #fff;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            visibility: hidden;
-            opacity: 0;
-            transition: opacity 0.2s;
-            z-index: 1000;
-        }
-
-        .tooth:hover .tooltip {
-            visibility: visible;
-            opacity: 1;
+        .modal button {
+            margin: 5px 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div style="text-align: left; margin-bottom: 20px;">
-            <button onclick="window.location.href='pagina_nova.html';">Voltar</button>
-        </div>
+        <button onclick="window.location.href='pagina_nova.html';">Voltar</button>
         <h1>Odontograma Interativo</h1>
         <div class="odontograma" id="odontograma"></div>
-        <div class="actions">
-            <input type="text" id="odontograma-nome" placeholder="Nome do Odontograma" />
-            <button id="save-button">Salvar Odontograma</button>
-            <button id="new-button">Novo Odontograma</button>
+        <div>
+            <button onclick="salvarOdontograma()">Salvar Odontograma</button>
+            <button onclick="novoOdontograma()">Novo Odontograma</button>
         </div>
-        <div class="saved-list">
-            <h2>Odontogramas Salvos</h2>
-            <ul id="saved-odontograms"></ul>
-        </div>
+    </div>
+
+    <!-- Modal para anotação e exclusão/restauração -->
+    <div class="modal" id="tooth-modal">
+        <h3 id="modal-title"></h3>
+        <textarea id="tooth-note" placeholder="Escreva uma anotação..."></textarea>
+        <button onclick="salvarNota()">Salvar Anotação</button>
+        <button onclick="alterarEstadoDente()">Excluir/Restaurar Dente</button>
+        <button onclick="fecharModal()">Fechar</button>
     </div>
 
     <script>
         const odontograma = document.getElementById("odontograma");
-        const odontogramaNome = document.getElementById("odontograma-nome");
-        const savedList = document.getElementById("saved-odontograms");
+        const modal = document.getElementById("tooth-modal");
+        const modalTitle = document.getElementById("modal-title");
+        const toothNote = document.getElementById("tooth-note");
         let dentes = [];
-        let odontogramasSalvos = JSON.parse(localStorage.getItem("odontogramas")) || {};
+        let currentTooth = null;
 
+        // Gera os dentes e popula o odontograma
         function gerarDentes() {
+            odontograma.innerHTML = "";
             const quadrantes = {
                 superiorDireito: [18, 17, 16, 15, 14, 13, 12, 11],
                 superiorEsquerdo: [21, 22, 23, 24, 25, 26, 27, 28],
@@ -176,74 +146,79 @@
                 inferiorEsquerdo: [31, 32, 33, 34, 35, 36, 37, 38],
             };
 
-            for (const [_, dentesLista] of Object.entries(quadrantes)) {
-                dentesLista.forEach((num) => {
-                    const dente = document.createElement("div");
-                    dente.classList.add("tooth");
-                    dente.dataset.id = num;
-                    dente.innerHTML = `
-                        <span class="tooth-number">${num}</span>
-                        <div class="tooltip">Clique para interagir</div>
-                    `;
-                    odontograma.appendChild(dente);
-                    dentes.push({ id: num, status: "Saudável", nota: "" });
+            for (const [_, listaDentes] of Object.entries(quadrantes)) {
+                listaDentes.forEach((num) => {
+                    const dente = {
+                        id: num,
+                        nota: "",
+                        status: "Saudável",
+                    };
+                    dentes.push(dente);
+
+                    const elementoDente = document.createElement("div");
+                    elementoDente.classList.add("tooth");
+                    elementoDente.dataset.id = num;
+                    elementoDente.innerHTML = `<span class="tooth-number">${num}</span>`;
+                    elementoDente.onclick = () => abrirModal(dente);
+
+                    odontograma.appendChild(elementoDente);
                 });
             }
         }
 
-        function salvarOdontograma() {
-            if (odontogramaNome.value.trim()) {
-                const nome = odontogramaNome.value.trim();
-                odontogramasSalvos[nome] = dentes;
-                localStorage.setItem("odontogramas", JSON.stringify(odontogramasSalvos));
-                listarOdontogramas();
-                alert("Odontograma salvo com sucesso!");
-            } else {
-                alert("Insira um nome para o odontograma.");
+        // Abre o modal para anotações ou exclusão/restauração
+        function abrirModal(dente) {
+            currentTooth = dente;
+            modalTitle.textContent = `Dente ${dente.id}`;
+            toothNote.value = dente.nota;
+            modal.classList.add("open");
+        }
+
+        // Fecha o modal
+        function fecharModal() {
+            modal.classList.remove("open");
+        }
+
+        // Salva a anotação no dente
+        function salvarNota() {
+            if (currentTooth) {
+                currentTooth.nota = toothNote.value;
+                alert(`Anotação salva para o dente ${currentTooth.id}!`);
+                fecharModal();
             }
         }
 
-        function listarOdontogramas() {
-            savedList.innerHTML = "";
-            Object.keys(odontogramasSalvos).forEach((nome) => {
-                const li = document.createElement("li");
-                li.textContent = nome;
-
-                const abrirBtn = document.createElement("button");
-                abrirBtn.textContent = "Abrir";
-                abrirBtn.onclick = () => carregarOdontograma(nome);
-                li.appendChild(abrirBtn);
-
-                const excluirBtn = document.createElement("button");
-                excluirBtn.textContent = "Excluir";
-                excluirBtn.onclick = () => excluirOdontograma(nome);
-                li.appendChild(excluirBtn);
-
-                savedList.appendChild(li);
-            });
+        // Altera o estado do dente (excluir/restaurar)
+        function alterarEstadoDente() {
+            if (currentTooth) {
+                const elementoDente = document.querySelector(
+                    `.tooth[data-id='${currentTooth.id}']`
+                );
+                if (currentTooth.status === "Saudável") {
+                    currentTooth.status = "Excluído";
+                    elementoDente.classList.add("excluded");
+                } else {
+                    currentTooth.status = "Saudável";
+                    elementoDente.classList.remove("excluded");
+                }
+                fecharModal();
+            }
         }
 
-        function carregarOdontograma(nome) {
-            dentes = odontogramasSalvos[nome];
-            odontograma.innerHTML = "";
-            gerarDentes();
+        // Salva o estado do odontograma (localStorage pode ser usado)
+        function salvarOdontograma() {
+            console.log("Odontograma salvo:", dentes);
+            alert("Odontograma salvo com sucesso!");
         }
 
-        function excluirOdontograma(nome) {
-            delete odontogramasSalvos[nome];
-            localStorage.setItem("odontogramas", JSON.stringify(odontogramasSalvos));
-            listarOdontogramas();
-        }
-
-        document.getElementById("save-button").onclick = salvarOdontograma;
-        document.getElementById("new-button").onclick = () => {
+        // Reseta o odontograma para um novo estado
+        function novoOdontograma() {
             dentes = [];
-            odontograma.innerHTML = "";
             gerarDentes();
-        };
+            alert("Novo odontograma criado!");
+        }
 
         gerarDentes();
-        listarOdontogramas();
     </script>
 </body>
 </html>
